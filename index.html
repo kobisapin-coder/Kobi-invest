@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0f16">
+<title>KOBI INVEST</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0f16;color:#f3f5f7;font-family:Arial,sans-serif;padding:18px}
+header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #303641;padding:10px 0 20px}
+h1{color:#65c982;margin:0;font-size:27px}
+small,.muted{color:#9aa4b2}
+input,button{font:inherit;border-radius:10px;padding:12px;border:1px solid #3a4452}
+input{background:#171d27;color:white;width:100%;margin:16px 0}
+button{background:#235d3b;color:white}
+.card{background:#141b25;border:1px solid #293341;border-radius:14px;padding:16px;margin:14px 0}
+.price{font-size:30px;font-weight:bold;margin:8px 0}
+.green{color:#65d486}.red{color:#ff7777}
+.tag{display:inline-block;padding:5px 9px;background:#343524;border-radius:7px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+h2{font-size:20px}
+footer{color:#929baa;font-size:12px;margin:25px 0}
+</style>
+</head>
+<body>
+<header>
+<div><h1>KOBI INVEST</h1><small>מרכז המחקר הפיננסי שלך</small></div>
+<span class="tag">גרסת בטא</span>
+</header>
+
+<h2>מעקב אחר מניות</h2>
+<input id="symbol" placeholder="הזן סימול, למשל AAPL או NVDA">
+<button onclick="addStock()">הוסף לרשימה</button>
+<div id="stocks"></div>
+
+<div class="card">
+<h2>ניתוח שוק</h2>
+<div class="grid">
+<div><small>מגמה</small><p>ממתין לנתונים</p></div>
+<div><small>RSI · MACD</small><p>לא מחובר</p></div>
+<div><small>שווי הוגן</small><p>לא זמין</p></div>
+<div><small>דירוג אנליסטים</small><p>לא זמין</p></div>
+</div>
+</div>
+
+<div class="card">
+<h2>חדשות פיננסיות</h2>
+<p>חדשות חיות עדיין לא מחוברות.</p>
+<p class="muted">לא יוצגו חדשות או מחירים מומצאים.</p>
+</div>
+
+<div class="card">
+<h2>נתוני מידע</h2>
+<p><span class="green">●</span> ממשק האתר פעיל</p>
+<p><span class="red">●</span> נתוני שוק חיים: לא מחוברים</p>
+<p class="muted">מחירים, אינדיקטורים, שווי הוגן וחדשות יופעלו לאחר חיבור ספק נתונים.</p>
+</div>
+
+<footer>KOBI INVEST · כלי מחקר בלבד, לא ייעוץ השקעות.</footer>
+
+<script>
+let stocks=[];
+try{stocks=JSON.parse(localStorage.getItem('kobiStocks')||'[]')}catch(e){}
+function render(){
+document.getElementById('stocks').innerHTML=stocks.map((s,i)=>
+'<div class="card"><b>'+s+'</b><p class="muted">מחיר חי לא זמין</p><button onclick="removeStock('+i+')">הסר</button></div>'
+).join('');
+}
+function addStock(){
+let el=document.getElementById('symbol');
+let s=el.value.trim().toUpperCase();
+if(!/^[A-Z0-9.^-]{1,15}$/.test(s)){alert('הזן סימול באנגלית');return}
+if(!stocks.includes(s))stocks.push(s);
+try{localStorage.setItem('kobiStocks',JSON.stringify(stocks))}catch(e){}
+el.value='';render();
+}
+function removeStock(i){
+stocks.splice(i,1);
+try{localStorage.setItem('kobiStocks',JSON.stringify(stocks))}catch(e){}
+render();
+}
+render();
+</script>
+</body>
+</html>
