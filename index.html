@@ -1,86 +1,161 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0f16">
 <title>KOBI INVEST</title>
 <style>
+:root{color-scheme:dark;--bg:#0b0f16;--panel:#141b26;--line:#2a3443;--text:#f3f5f7;--muted:#9aa4b2;--green:#65c982;--blue:#83b8ff}
 *{box-sizing:border-box}
-body{margin:0;background:#0b0f16;color:#f3f5f7;font-family:Arial,sans-serif;padding:18px}
-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #303641;padding:10px 0 20px}
-h1{color:#65c982;margin:0;font-size:27px}
-small,.muted{color:#9aa4b2}
-input,button{font:inherit;border-radius:10px;padding:12px;border:1px solid #3a4452}
-input{background:#171d27;color:white;width:100%;margin:16px 0}
-button{background:#235d3b;color:white}
-.card{background:#141b25;border:1px solid #293341;border-radius:14px;padding:16px;margin:14px 0}
-.price{font-size:30px;font-weight:bold;margin:8px 0}
-.green{color:#65d486}.red{color:#ff7777}
-.tag{display:inline-block;padding:5px 9px;background:#343524;border-radius:7px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-h2{font-size:20px}
-footer{color:#929baa;font-size:12px;margin:25px 0}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;line-height:1.5}
+main{max-width:950px;margin:auto;padding:16px}
+header,.row,.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+header{padding:12px 0 20px;border-bottom:1px solid var(--line)}
+h1{color:var(--green);margin:0;font-size:30px}
+h2{font-size:20px;margin:0 0 12px}
+small,.muted{color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px;margin:14px 0}
+input,button{font:inherit;border:1px solid #3a4658;border-radius:10px;padding:11px;background:#0d131d;color:white;min-height:44px}
+input{width:100%}
+button{cursor:pointer;font-weight:bold}
+.primary{background:#235d3b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.stock,.metric{background:#101722;border:1px solid var(--line);border-radius:12px;padding:13px;min-width:0}
+.ticker{font-size:22px;font-weight:bold}
+.status{color:#f0d58c;font-size:12px;margin:8px 0;display:block}
+.price{font-size:21px;font-weight:bold}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+a{color:var(--blue);text-decoration:none;border:1px solid #33465e;border-radius:8px;padding:6px;font-size:13px}
+.notice{background:#211f18;color:#f3dfaa;padding:12px;border-radius:9px;margin:12px 0}
+.metric b{display:block;margin-bottom:5px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:480px){main{padding:10px}.panel{padding:12px}}
 </style>
 </head>
 <body>
+<main>
 <header>
-<div><h1>KOBI INVEST</h1><small>מרכז המחקר הפיננסי שלך</small></div>
-<span class="tag">גרסת בטא</span>
+<div><h1>KOBI INVEST</h1><div class="muted">מרכז המחקר הפיננסי שלך</div></div>
+<small>גרסת בטא</small>
 </header>
 
-<h2>מעקב אחר מניות</h2>
-<input id="symbol" placeholder="הזן סימול, למשל AAPL או NVDA">
-<button onclick="addStock()">הוסף לרשימה</button>
-<div id="stocks"></div>
+<section class="panel">
+<h2>רשימת מעקב</h2>
+<div class="notice">חשוב: האתר עדיין לא מחובר למקור נתוני שוק. מחירים ואינדיקטורים אמיתיים אינם זמינים כרגע.</div>
+<form id="addForm" class="row">
+<div style="flex:1;min-width:180px">
+<label for="ticker">הוספת סימול מניה או קרן סל</label>
+<input id="ticker" placeholder="לדוגמה AAPL או MSFT" maxlength="15" required>
+</div>
+<button class="primary" type="submit">הוסף</button>
+</form>
+<div class="row" style="margin-top:10px">
+<button id="restore">שחזור הרשימה המקורית</button>
+<button id="export">ייצוא הרשימה</button>
+</div>
+</section>
 
-<div class="card">
-<h2>ניתוח שוק</h2>
+<section class="panel">
+<div class="top"><h2>המניות שלי</h2><small id="count"></small></div>
+<div id="watchlist" class="grid"></div>
+</section>
+
+<section class="panel">
+<h2>ניתוח טכני</h2>
 <div class="grid">
-<div><small>מגמה</small><p>ממתין לנתונים</p></div>
-<div><small>RSI · MACD</small><p>לא מחובר</p></div>
-<div><small>שווי הוגן</small><p>לא זמין</p></div>
-<div><small>דירוג אנליסטים</small><p>לא זמין</p></div>
+<div class="metric"><b>RSI (14)</b><small>לא זמין — נדרש מקור נתונים היסטורי.</small></div>
+<div class="metric"><b>MACD (12, 26, 9)</b><small>לא זמין — נדרש מקור נתונים היסטורי.</small></div>
+<div class="metric"><b>תמיכה והתנגדות</b><small>לא מחושב — נדרשים נתוני מחירים.</small></div>
+<div class="metric"><b>מגמת השוק</b><small>לא זמינה — אין חיבור לנתוני שוק.</small></div>
 </div>
-</div>
+</section>
 
-<div class="card">
+<section class="panel">
 <h2>חדשות פיננסיות</h2>
-<p>חדשות חיות עדיין לא מחוברות.</p>
-<p class="muted">לא יוצגו חדשות או מחירים מומצאים.</p>
+<div class="links">
+<a href="https://news.google.com/search?q=stock%20market" target="_blank" rel="noopener">חדשות שוק ההון</a>
+<a href="https://news.google.com/search?q=NVIDIA%20stock" target="_blank" rel="noopener">חדשות NVIDIA</a>
+<a href="https://news.google.com/search?q=SpaceX%20stock" target="_blank" rel="noopener">חדשות SpaceX</a>
+<a href="https://www.sec.gov/edgar/search/" target="_blank" rel="noopener">דיווחים רשמיים</a>
 </div>
+</section>
 
-<div class="card">
-<h2>נתוני מידע</h2>
-<p><span class="green">●</span> ממשק האתר פעיל</p>
-<p><span class="red">●</span> נתוני שוק חיים: לא מחוברים</p>
-<p class="muted">מחירים, אינדיקטורים, שווי הוגן וחדשות יופעלו לאחר חיבור ספק נתונים.</p>
-</div>
-
-<footer>KOBI INVEST · כלי מחקר בלבד, לא ייעוץ השקעות.</footer>
+<footer>KOBI INVEST · כלי מחקר אישי · לא ייעוץ השקעות</footer>
+</main>
 
 <script>
-let stocks=[];
-try{stocks=JSON.parse(localStorage.getItem('kobiStocks')||'[]')}catch(e){}
+const DEFAULTS=[
+{ticker:"NVDA",name:"NVIDIA"},
+{ticker:"SPCX",name:"SpaceX"},
+{ticker:"SPY",name:"SPDR S&P 500 ETF"},
+{ticker:"QQQ",name:"Invesco QQQ ETF"},
+{ticker:"CVX",name:"Chevron"}
+];
+const KEY="kobi-invest-watchlist-v1";
+let list;
+try{
+const saved=JSON.parse(localStorage.getItem(KEY));
+list=Array.isArray(saved)?saved:DEFAULTS.map(x=>({...x}));
+}catch(e){list=DEFAULTS.map(x=>({...x}));}
+
+function save(){
+try{localStorage.setItem(KEY,JSON.stringify(list));}catch(e){}
+}
+function esc(s){
+return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
 function render(){
-document.getElementById('stocks').innerHTML=stocks.map((s,i)=>
-'<div class="card"><b>'+s+'</b><p class="muted">מחיר חי לא זמין</p><button onclick="removeStock('+i+')">הסר</button></div>'
-).join('');
+const root=document.getElementById("watchlist");
+document.getElementById("count").textContent=list.length+" סימולים";
+if(!list.length){
+root.textContent="הרשימה ריקה. הוסף סימול חדש.";
+return;
 }
-function addStock(){
-let el=document.getElementById('symbol');
-let s=el.value.trim().toUpperCase();
-if(!/^[A-Z0-9.^-]{1,15}$/.test(s)){alert('הזן סימול באנגלית');return}
-if(!stocks.includes(s))stocks.push(s);
-try{localStorage.setItem('kobiStocks',JSON.stringify(stocks))}catch(e){}
-el.value='';render();
+root.innerHTML=list.map(x=>{
+const t=esc(x.ticker),n=esc(x.name||x.ticker);
+const q=encodeURIComponent(x.ticker);
+return `<article class="stock">
+<div class="top"><div><div class="ticker">${t}</div><small>${n}</small></div>
+<button type="button" data-remove="${t}">הסר</button></div>
+<span class="status">מחיר חי: לא מחובר</span>
+<div class="price">—</div>
+<small>מחיר אמיתי לא זמין באתר כרגע.</small>
+<div class="links">
+<a href="https://finance.yahoo.com/quote/${q}/" target="_blank" rel="noopener">מחיר ונתונים</a>
+<a href="https://www.tradingview.com/symbols/${q}/" target="_blank" rel="noopener">גרף</a>
+<a href="https://news.google.com/search?q=${q}%20stock" target="_blank" rel="noopener">חדשות</a>
+</div></article>`;
+}).join("");
+root.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
+list=list.filter(x=>x.ticker!==b.dataset.remove);save();render();
+});
 }
-function removeStock(i){
-stocks.splice(i,1);
-try{localStorage.setItem('kobiStocks',JSON.stringify(stocks))}catch(e){}
-render();
+document.getElementById("addForm").addEventListener("submit",e=>{
+e.preventDefault();
+const input=document.getElementById("ticker");
+const ticker=input.value.trim().toUpperCase().replace(/\s/g,"");
+if(!/^[A-Z0-9.^-]{1,15}$/.test(ticker)){
+alert("הזן סימול באנגלית.");return;
 }
+if(list.some(x=>x.ticker===ticker)){
+alert("הסימול כבר קיים ברשימה.");return;
+}
+const known=DEFAULTS.find(x=>x.ticker===ticker);
+list.unshift({ticker,name:known?known.name:ticker});
+save();render();input.value="";
+});
+document.getElementById("restore").onclick=()=>{
+if(confirm("לשחזר את הרשימה המקורית?")){
+list=DEFAULTS.map(x=>({...x}));save();render();
+}
+};
+document.getElementById("export").onclick=()=>{
+const blob=new Blob([JSON.stringify(list,null,2)],{type:"application/json"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");a.href=url;a.download="kobi-invest-watchlist.json";a.click();
+URL.revokeObjectURL(url);
+};
 render();
 </script>
 </body>
